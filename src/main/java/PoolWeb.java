@@ -16,6 +16,8 @@ public class PoolWeb {
 	private static GestorExcel gestorExcel;
 	private static String[][] info;
 	private static int fila;
+	private static int DNI_INICIO = 15000000;
+	private static int DNI_FIN = 16000000;
 
 	public static void generarPeticion(int dni) {
 		
@@ -59,7 +61,7 @@ public class PoolWeb {
 		List<Future> futureTaskList = new LinkedList<>();
 		ExecutorService executor = Executors.newFixedThreadPool(300);
 
-		for (int dni = 1; dni < 10; dni++) {
+		for (int dni = DNI_INICIO; dni < DNI_FIN; dni++) {
 			final int finalDni = dni;
 			int finalDni1 = dni;
 			Runnable thread = new Runnable() {
