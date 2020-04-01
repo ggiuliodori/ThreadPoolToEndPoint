@@ -32,6 +32,7 @@ public class PoolWeb {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					con.getInputStream()));
 			
+			LinkedList<String> linkedList = new LinkedList<>();
 			String linea;
 			String str=new String();
 			while ((linea = in.readLine()) != null) {
@@ -43,6 +44,7 @@ public class PoolWeb {
 			info[fila][1]=apenom;
 			System.out.println(dni+" DNI encontrado "+apenom);
 			fila++;
+			linkedList.add(apenom);
 		} 
 		catch (IOException e) {
 			System.out.println("No existe DNI "+dni);
@@ -53,11 +55,11 @@ public class PoolWeb {
 		gestorExcel = new GestorExcel();
 		gestorExcel.crearArchivo();
 		info = new String[10][2];
-		fila=0;
+		fila = 0;
 		List<Future> futureTaskList = new LinkedList<>();
 		ExecutorService executor = Executors.newFixedThreadPool(300);
 
-		for(int dni=1;dni<10;dni++) {
+		for (int dni = 1; dni < 10; dni++) {
 			final int finalDni = dni;
 			int finalDni1 = dni;
 			Runnable thread = new Runnable() {
@@ -68,12 +70,18 @@ public class PoolWeb {
 			};
 			FutureTask<String> task = new FutureTask(thread, "thread done");
 			futureTaskList.add(executor.submit(task));
-
 		}
-
-		
+		boolean allTerminated = futureTaskList.parallelStream().allMatch(t -> t.isDone());
+		while (!allTerminated) {
+			System.out.println("leyendo dni");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			allTerminated = futureTaskList.parallelStream().allMatch(t -> t.isDone());
+		}
 		gestorExcel.escribirArchivo(info);
+		System.out.println("--------------------> FIN <-------------------");
 	}
-	
-	
-	}
+}
