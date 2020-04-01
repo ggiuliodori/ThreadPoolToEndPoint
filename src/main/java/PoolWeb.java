@@ -18,6 +18,8 @@ public class PoolWeb {
 	private static int fila;
 	private static int DNI_INICIO = 1;
 	private static int DNI_FIN = 1000;
+	static LinkedList<String> linkedList = new LinkedList<>();
+
 
 	public static void generarPeticion(int dni) {
 		
@@ -34,7 +36,6 @@ public class PoolWeb {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					con.getInputStream()));
 			
-			LinkedList<String> linkedList = new LinkedList<>();
 			String linea;
 			String str=new String();
 			while ((linea = in.readLine()) != null) {
@@ -59,7 +60,7 @@ public class PoolWeb {
 		info = new String[10][2];
 		fila = 0;
 		List<Future> futureTaskList = new LinkedList<>();
-		ExecutorService executor = Executors.newFixedThreadPool(300);
+		ExecutorService executor = Executors.newFixedThreadPool(100);
 
 		for (int dni = DNI_INICIO; dni < DNI_FIN; dni++) {
 			final int finalDni = dni;
@@ -67,6 +68,7 @@ public class PoolWeb {
 			Runnable thread = new Runnable() {
 				@Override
 				public void run() {
+					System.out.println("-----------------------------------------------------------Thread "+finalDni);
 					generarPeticion(finalDni1);
 				}
 			};
@@ -84,6 +86,9 @@ public class PoolWeb {
 			allTerminated = futureTaskList.parallelStream().allMatch(t -> t.isDone());
 		}
 		gestorExcel.escribirArchivo(info);
+		for(int i=0;i<linkedList.size();i++) {
+			System.out.println("--------> LINKEDLIST "+linkedList.get(i));
+		}
 		System.out.println("--------------------> FIN <-------------------");
 	}
 }
