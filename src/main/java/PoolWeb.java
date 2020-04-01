@@ -16,8 +16,8 @@ public class PoolWeb {
 	private static GestorExcel gestorExcel;
 	private static String[][] info;
 	private static int fila;
-	private static int DNI_INICIO = 15000000;
-	private static int DNI_FIN = 16000000;
+	private static int DNI_INICIO = 1;
+	private static int DNI_FIN = 1000;
 
 	public static void generarPeticion(int dni) {
 		
