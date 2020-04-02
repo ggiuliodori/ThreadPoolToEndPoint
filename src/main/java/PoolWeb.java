@@ -37,10 +37,12 @@ public class PoolWeb {
 			}
 			String atr_value_dni="\"dni\":\""+dni.toString()+"\"";
 			String atr_value_apenom=str.split(",")[1].replaceAll("}", "");
-			json=json+"{"+atr_value_dni+","+atr_value_apenom+"},";		
+			String currentStr = "{"+atr_value_dni+","+atr_value_apenom+"}";
+			System.out.println(currentStr);
+			json=json+currentStr+",";		
 		} 
 		catch (IOException e) {
-			//System.out.println("No existe DNI "+dni);
+			System.out.println("No existe DNI "+dni);
 		}
 	}
 
@@ -62,6 +64,7 @@ public class PoolWeb {
 		}
 		boolean allTerminated = futureTaskList.parallelStream().allMatch(t -> t.isDone());
 		while (!allTerminated) {
+			System.out.println("En proceso concurrente..");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
