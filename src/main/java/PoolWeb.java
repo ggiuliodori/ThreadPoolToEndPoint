@@ -13,63 +13,48 @@ import java.util.concurrent.FutureTask;
 
 public class PoolWeb {
 	
-	private static GestorExcel gestorExcel;
-	private static String[][] info;
-	private static int fila;
-	private static int DNI_INICIO = 1;
-	private static int DNI_FIN = 1000;
-	static LinkedList<String> linkedList = new LinkedList<>();
+	private String json;
+	private static int DNI_INICIO;
+	private static int DNI_FIN;
 
 
-	public static void generarPeticion(int dni) {
-		
+	
+	public PoolWeb() {
+		DNI_INICIO = 1;
+		DNI_FIN = 10;
+	}
 
+	private void generarPeticion(Integer dni) {
 		URL url;
 		try {
-			// Creando un objeto URL
 			url = new URL("http://centro-estetica.ddns.net/api/v1/pacientes/activo?dni="+dni);
-
-			// Realizando la petición GET
 			URLConnection con = url.openConnection();
-
-			// Leyendo el resultado
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
-			
+			BufferedReader resultado = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String linea;
 			String str=new String();
-			while ((linea = in.readLine()) != null) {
+			while ((linea = resultado.readLine()) != null) {
 				str=new String(linea);
 			}
-			info[fila][0]=(new Integer(dni)).toString();
-			String apenom=str.split(",")[1].replace("}", "");
-			apenom=apenom.replace("nombre", "").replace(":", "").replace("\"", "");
-			info[fila][1]=apenom;
-			System.out.println(dni+" DNI encontrado "+apenom);
-			fila++;
-			linkedList.add(apenom);
+			String atr_value_dni="\"dni\":\""+dni.toString()+"\"";
+			String atr_value_apenom=str.split(",")[1].replaceAll("}", "");
+			json=json+"{"+atr_value_dni+","+atr_value_apenom+"},";		
 		} 
 		catch (IOException e) {
-			System.out.println("No existe DNI "+dni);
+			//System.out.println("No existe DNI "+dni);
 		}
 	}
 
-	public static void main(String[] args) {
-		gestorExcel = new GestorExcel();
-		gestorExcel.crearArchivo();
-		info = new String[10][2];
-		fila = 0;
+	public String obtenerClientesJSON() {
 		List<Future> futureTaskList = new LinkedList<>();
 		ExecutorService executor = Executors.newFixedThreadPool(100);
 
 		for (int dni = DNI_INICIO; dni < DNI_FIN; dni++) {
-			final int finalDni = dni;
-			int finalDni1 = dni;
+			int dniCliente = dni;
+			json=new String("");
 			Runnable thread = new Runnable() {
 				@Override
 				public void run() {
-					System.out.println("-----------------------------------------------------------Thread "+finalDni);
-					generarPeticion(finalDni1);
+					generarPeticion(dniCliente);
 				}
 			};
 			FutureTask<String> task = new FutureTask(thread, "thread done");
@@ -77,7 +62,6 @@ public class PoolWeb {
 		}
 		boolean allTerminated = futureTaskList.parallelStream().allMatch(t -> t.isDone());
 		while (!allTerminated) {
-			System.out.println("leyendo dni");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -85,10 +69,9 @@ public class PoolWeb {
 			}
 			allTerminated = futureTaskList.parallelStream().allMatch(t -> t.isDone());
 		}
-		gestorExcel.escribirArchivo(info);
-		for(int i=0;i<linkedList.size();i++) {
-			System.out.println("--------> LINKEDLIST "+linkedList.get(i));
-		}
+		json = "{\"clientes\":["+json+"]}";
+		json=json.replace(",]", "]");
 		System.out.println("--------------------> FIN <-------------------");
+		return json;
 	}
 }
